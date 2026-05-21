@@ -3394,7 +3394,6 @@ async function loadKlaviyoData() {
     }
 
     const { totalProfiles, campaigns, flows, cachedAt } = data;
-    console.log('[Klaviyo cache] flows sample:', flows?.[0], 'campaigns sample:', campaigns?.[0]);
 
     // Update notice with cache time
     const notice = document.getElementById('kl-notice');
@@ -3410,10 +3409,10 @@ async function loadKlaviyoData() {
 
     (campaigns || []).forEach(c => {
       const s = c.stats || {};
-      totalRevenue   += parseFloat(s.conversion_value        ?? 0);
+      totalRevenue   += parseFloat(s.sum_revenue        ?? 0);
       totalOrders    += parseInt(  s.placed_order_count  ?? 0);
       totalUnsubs    += parseInt(  s.unsubscribed_count  ?? 0);
-      totalRecipients+= parseInt(  s.recipients_count || s.delivered    ?? 0);
+      totalRecipients+= parseInt(  s.recipients_count    ?? 0);
       const openR  = parseFloat(s.open_rate  ?? 0);
       const clickR = parseFloat(s.click_rate ?? 0);
       if(openR  > 0) openRates.push(openR);
@@ -3450,10 +3449,10 @@ async function loadKlaviyoData() {
       campaigns.forEach(c => {
         const s = c.stats || {};
         const sentDate = c.send_time ? new Date(c.send_time).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
-        const rec    = parseInt( s.recipients_count || s.delivered    ?? 0);
+        const rec    = parseInt( s.recipients_count    ?? 0);
         const openR  = parseFloat(s.open_rate          ?? 0);
         const clickR = parseFloat(s.click_rate         ?? 0);
-        const rev    = parseFloat(s.conversion_value        ?? 0);
+        const rev    = parseFloat(s.sum_revenue        ?? 0);
         const unsubs = parseInt( s.unsubscribed_count  ?? 0);
         const openColor  = openR  > 0.3  ? 'var(--green)' : openR  > 0.2 ? 'var(--amber)' : 'var(--red)';
         const clickColor = clickR > 0.03 ? 'var(--green)' : 'var(--ink)';
@@ -3480,10 +3479,10 @@ async function loadKlaviyoData() {
         const s = f.stats || {};
         const status    = f.status || '—';
         const statusCls = status==='live'?'active-pill':status==='draft'?'learning-pill':'paused-pill';
-        const delivered = parseInt( s.delivered   ?? 0);
+        const delivered = parseInt( s.delivered_count   ?? 0);
         const openR     = parseFloat(s.open_rate        ?? 0);
         const clickR    = parseFloat(s.click_rate       ?? 0);
-        const rev       = parseFloat(s.conversion_value      ?? 0);
+        const rev       = parseFloat(s.sum_revenue      ?? 0);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="font-weight:500">${f.name||'—'}</td>
@@ -3694,7 +3693,7 @@ function renderAlerts(alerts) {
 // ═══════════════════════════════════════════════
 // ANNUAL GOAL + YESTERDAY
 // ═══════════════════════════════════════════════
-let annualGoal = 0; try { annualGoal = parseFloat(localStorage.getItem('st_annual_goal') || 0); } catch(e) {}
+let annualGoal = parseFloat(localStorage.getItem('st_annual_goal') || 0);
 
 function setAnnualGoal() {
   const val = prompt('Set annual revenue target (£):', annualGoal || '1000000');
